@@ -12,7 +12,6 @@ class PcapAnalysis {
         }));
         const pcapArr = dpkt.pcap.Reader(pcapFile);
         for(const packet of pcapArr){
-            console.log(idx);
             const ts = packet[0];
             const buf = packet[1];
             const eth = dpkt.ethernet.Ethernet(buf);
