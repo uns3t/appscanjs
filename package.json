@@ -1,6 +1,6 @@
 {
   "name": "appscanjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a node.js machine learning project to predict app by app's flow",
   "main": "index.js",
   "scripts": {
