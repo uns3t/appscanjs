@@ -1,6 +1,29 @@
-const PcapAnalysis = require('./src/PcapAnalysis')
+const PreProcessor = require('./src/PreProcessor')
+const Learning = require('./src/Learning')
 
-const pcapAnalysis = new PcapAnalysis();
-const test = pcapAnalysis.analysis('/Users/zhangshiyu/Documents/Graduation-project/test3app.pcap')
-console.log(test.length);
-console.log(test[0]);
+class AppScan{
+    constructor(){
+        this.preProcessor=new PreProcessor();
+        this.learning = new Learning();
+    }
+
+    processor(pcapFliePath,appTimeLog,timeThreshold,dataScale){
+        return this.preProcessor.processor(pcapFliePath,appTimeLog,timeThreshold,dataScale);
+    }
+
+    handleData(packetData,appTimeLog,timeThreshold,dataScale){
+        return this.preProcessor.handleData(packetData,appTimeLog,timeThreshold,dataScale);
+    }
+
+    fit(X,y){
+        return this.learning.fit(X,y);
+    }
+
+    predict(X,threshold){
+        return this.learning.predict(X,threshold)
+    }
+
+
+}
+
+module.exports = AppScan

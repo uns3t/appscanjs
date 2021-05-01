@@ -3,6 +3,7 @@ const { open, len, isinstance } = boa.builtins();
 const dpkt = boa.import('dpkt');
 const ipaddress = boa.import('ipaddress');
 const socket = boa.import('socket');
+const fs = require('fs')
 
 class PcapAnalysis {
     analysis(fliePath){
@@ -32,8 +33,8 @@ class PcapAnalysis {
                                 'srcIp':srcIp,
                                 'dstIp':this.inetToStr(ip.dst)})
         }
-
         pcapFile.close();
+        // fs.writeFileSync('./midData.json',JSON.stringify(allPacketData))
         return allPacketData;
     }
 

@@ -3,8 +3,8 @@ const Features = require('./Features')
 
 class PreProcessor{
     constructor(){
-        this.pcapAnalysis = PcapAnalysis();
-        this.features = Features();
+        this.pcapAnalysis = new PcapAnalysis();
+        this.features = new Features();
     }
 
     processor(pcapFliePath,appTimeLog,timeThreshold,dataScale){
@@ -57,14 +57,14 @@ class PreProcessor{
                 let arr = curFlow[arrTemp].map(val=>{
                     return {len:val.len,direction:val.direction}
                 })
-                flowData.push({closeTime,data:arr})
+                flowData.push({closeTime:closeTime,data:arr})
             })
         }
 
         return flowData
     }
     handleSgin(flowData,appTimeLog){
-        if(!appTimeLogPath){
+        if(!appTimeLog){
             return flowData.map(val =>{
                 return val.data
             })
