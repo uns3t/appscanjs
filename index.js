@@ -1,29 +1,27 @@
-const PreProcessor = require('./src/PreProcessor')
-const Learning = require('./src/Learning')
+const PreProcessor = require('./src/PreProcessor');
+const Learning = require('./src/Learning');
 
-class AppScan{
-    constructor(){
-        this.preProcessor=new PreProcessor();
-        this.learning = new Learning();
+class AppScan {
+    constructor(classificationType) {
+        this.preProcessor = new PreProcessor();
+        this.learning = new Learning(classificationType);
     }
 
-    processor(pcapFliePath,appTimeLog,timeThreshold,dataScale){
-        return this.preProcessor.processor(pcapFliePath,appTimeLog,timeThreshold,dataScale);
+    processor(pcapFliePath, timeThreshold, dataScale, appTimeLog) {
+        return this.preProcessor.processor(pcapFliePath, timeThreshold, dataScale, appTimeLog);
     }
 
-    handleData(packetData,appTimeLog,timeThreshold,dataScale){
-        return this.preProcessor.handleData(packetData,appTimeLog,timeThreshold,dataScale);
+    fit(X, y) {
+        return this.learning.fit(X, y);
     }
 
-    fit(X,y){
-        return this.learning.fit(X,y);
+    predict(X, threshold) {
+        return this.learning.predict(X, threshold);
     }
 
-    predict(X,threshold){
-        return this.learning.predict(X,threshold)
+    report(yTest, yPred) {
+        return this.learning.report(yTest, yPred);
     }
-
-
 }
 
-module.exports = AppScan
+module.exports = AppScan;

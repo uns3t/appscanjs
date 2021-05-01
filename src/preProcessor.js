@@ -1,93 +1,110 @@
-const PcapAnalysis = require('./PcapAnalysis')
-const Features = require('./Features')
+const PcapAnalysis = require('./PcapAnalysis');
+const Features = require('./Features');
 
-class PreProcessor{
-    constructor(){
+class PreProcessor {
+    constructor() {
         this.pcapAnalysis = new PcapAnalysis();
         this.features = new Features();
     }
 
-    processor(pcapFliePath,appTimeLog,timeThreshold,dataScale){
+    processor(pcapFliePath, timeThreshold, dataScale, appTimeLog) {
         const packetData = this.pcapAnalysis.analysis(pcapFliePath);
-        const featuresData = this.handleData(packetData,appTimeLog,timeThreshold,dataScale)
+        const featuresData = this.handleData(packetData, timeThreshold, dataScale, appTimeLog);
         return featuresData;
     }
 
-    handleData(packetData,appTimeLog,timeThreshold,dataScale){
-        const burstData = this.handleBurst(packetData,timeThreshold);
+    handleData(packetData, timeThreshold, dataScale, appTimeLog) {
+        const burstData = this.handleBurst(packetData, timeThreshold);
         const flowData = this.handleFlow(burstData);
-        const signData = this.handleSgin(flowData,appTimeLog)
-        const featuresData = this.features.handleFeatures(dataScale,signData.xData,signData.yData)
+        const signData = this.handleSgin(flowData, appTimeLog);
+        const featuresData = this.features.handleFeatures(
+            dataScale,
+            signData.xData,
+            signData.yData
+        );
         return featuresData;
     }
 
-    handleBurst(packetData,timeThreshold = 1){
-        let burstData=[];
-        let curTime=packetData[0].time+timeThreshold;
-        let tempData=[];
+    handleBurst(packetData, timeThreshold = 1) {
+        let burstData = [];
+        let curTime = packetData[0].time + timeThreshold;
+        let tempData = [];
         packetData.forEach(value => {
-            if(value.time<curTime){
+            if (value.time < curTime) {
                 tempData.push(value);
-            }else{
-                curTime=value.time+timeThreshold;
-                burstData.push(tempData)
-                tempData=[]
-                tempData.push(value)
+            } else {
+                curTime = value.time + timeThreshold;
+                burstData.push(tempData);
+                tempData = [];
+                tempData.push(value);
             }
-        })
-        return burstData
+        });
+        return burstData;
     }
 
-    handleFlow(burstData){
-        let flowData=[];
+    handleFlow(burstData) {
+        let flowData = [];
 
-        for(let idx=0;idx<burstData.length;idx++){
-            let curFlow={};
-            burstData[idx].forEach(val=>{
-                let remoteIp=val.direction?val.dstIp:val.srcIp
-                if(curFlow.hasOwnProperty(remoteIp)){
-                    curFlow[remoteIp].push({time:val.time,len:val.len,direction:val.direction})
-                }else{
-                    curFlow[remoteIp]=[{time:val.time,len:val.len,direction:val.direction}]
+        for (let idx = 0; idx < burstData.length; idx++) {
+            let curFlow = {};
+            burstData[idx].forEach(val => {
+                let remoteIp = val.direction ? val.dstIp : val.srcIp;
+                if (curFlow.hasOwnProperty(remoteIp)) {
+                    curFlow[remoteIp].push({
+                        time: val.time,
+                        len: val.len,
+                        direction: val.direction,
+                    });
+                } else {
+                    curFlow[remoteIp] = [
+                        { time: val.time, len: val.len, direction: val.direction },
+                    ];
                 }
-            })
+            });
 
-            Object.keys(curFlow).forEach(arrTemp=>{
-                let closeTime = Math.max.apply(Math, curFlow[arrTemp].map(function(o) {return o.time}))
-                let arr = curFlow[arrTemp].map(val=>{
-                    return {len:val.len,direction:val.direction}
-                })
-                flowData.push({closeTime:closeTime,data:arr})
-            })
+            Object.keys(curFlow).forEach(arrTemp => {
+                let closeTime = Math.max.apply(
+                    Math,
+                    curFlow[arrTemp].map(function (o) {
+                        return o.time;
+                    })
+                );
+                let arr = curFlow[arrTemp].map(val => {
+                    return { len: val.len, direction: val.direction };
+                });
+                flowData.push({ closeTime: closeTime, data: arr });
+            });
         }
 
-        return flowData
+        return flowData;
     }
-    handleSgin(flowData,appTimeLog){
-        if(!appTimeLog){
-            return flowData.map(val =>{
-                return val.data
-            })
+    handleSgin(flowData, appTimeLog) {
+        if (!appTimeLog) {
+            const xData = flowData.map(val => {
+                return val.data;
+            });
+            return { xData };
         }
-        const xData=[],yData=[]
-        let idx=0;
+        const xData = [],
+            yData = [];
+        let idx = 0;
 
-        for(let flow of flowData){
-            if(flow.closeTime<appTimeLog[idx].closeTime){
-                yData.push(appTimeLog[idx].label)
-                xData.push(flow.data)
-            }else{
-                idx++
-                if(idx>=appTimeLog.length){
+        for (let flow of flowData) {
+            if (flow.closeTime < appTimeLog[idx].closeTime) {
+                yData.push(appTimeLog[idx].label);
+                xData.push(flow.data);
+            } else {
+                idx++;
+                if (idx >= appTimeLog.length) {
                     break;
                 }
-                yData.push(appTimeLog[idx].label)
-                xData.push(flow.data)
+                yData.push(appTimeLog[idx].label);
+                xData.push(flow.data);
             }
         }
 
-        return { xData, yData }
+        return { xData, yData };
     }
 }
 
-module.exports = PreProcessor
+module.exports = PreProcessor;
